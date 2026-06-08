@@ -71,12 +71,29 @@ def run_crawling(nim, password):
             
             page.get_by_role("button", name="Masuk").click()
             
-            page.locator(".pricing-plan").first.wait_for(timeout=15000)
+            # Tunggu login berhasil (Dashboard muncul)
+            page.get_by_role("link", name="Dashboard").wait_for(timeout=15000)
             print("[+] Login berhasil!")
 
+            # --- NAVIGASI KE MENU JADWAL ---
+            print("[*] Memeriksa sidebar menu...")
+            tombol_sidebar = page.locator("#toggle-sidebar")
+            
+            if tombol_sidebar.is_visible():
+                print("[*] Membuka sidebar yang tersembunyi...")
+                tombol_sidebar.click()
+                page.wait_for_timeout(1000) # Jeda agar animasi selesai
+            
+            print("[*] Mengklik menu Jadwal...")
+            page.get_by_text("Jadwal", exact=True).click()
+            
+            # Tunggu sampai kartu matkul di halaman Jadwal muncul
+            page.locator(".pricing-plan").first.wait_for(timeout=15000)
+
+            # --- FILTERING KARTU JADWAL ---
             cards = page.locator(".pricing-plan")
             total_cards = cards.count()
-            print(f"[*] Menemukan {total_cards} kartu matakuliah di dashboard.")
+            print(f"[*] Menemukan {total_cards} kartu matakuliah di halaman jadwal.")
 
             for i in range(total_cards):
                 card = cards.nth(i)
@@ -103,7 +120,7 @@ def run_crawling(nim, password):
                     if tombol_masuk.count() > 0:
                         tombol_masuk.click()
                         
-                        # --- 3. EKSEKUSI FORM ABSENSI (Gambar 4) ---
+                        # --- EKSEKUSI FORM ABSENSI ---
                         print("[*] Menunggu halaman absensi termuat...")
                         page.get_by_text("Jam Masuk").wait_for(timeout=10000)
                         
@@ -112,7 +129,7 @@ def run_crawling(nim, password):
                         if radio_absen.count() > 0:
                             radio_absen.click()
                             page.get_by_role("button", name="Kirim").click()
-                            print(f"Berhasil melakukan absensi untuk {nama_matkul}!")
+                            print(f"[+] Berhasil melakukan absensi untuk {nama_matkul}!")
                             
                             status_report = {
                                 "status": "success",
@@ -131,7 +148,7 @@ def run_crawling(nim, password):
                         print(f"[-] Tombol 'Masuk Kelas' tidak aktif/tidak ada pada matkul {nama_matkul}.")
             
         except Exception as e:
-            print(f"Terjadi Error: {str(e)}")
+            print(f"[!] Terjadi Error: {str(e)}")
             status_report = {"status": "failed", "message": str(e)}
             
         finally:
