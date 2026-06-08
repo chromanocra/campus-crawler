@@ -1,0 +1,6 @@
+Flask
+playwright
+pymongo
+apscheduler
+requests
+gunicorn
